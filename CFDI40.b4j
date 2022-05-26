@@ -1,0 +1,187 @@
+﻿AppType=JavaFX
+Build1=Default,facturador.prodig.io
+Build2=Nomina,facturador.prodig.io,nomina
+File1=Layout1.bjl
+File2=layoutCalculos.bjl
+File3=layoutDatosBasicos.bjl
+File4=layoutFacturaTab.bjl
+File5=layoutSeleccion.bjl
+FileGroup1=Default Group
+FileGroup2=Default Group
+FileGroup3=Default Group
+FileGroup4=Default Group
+FileGroup5=Default Group
+Group=Default Group
+Library1=byteconverter
+Library10=jpoi
+Library11=jrandomaccessfile
+Library12=jshell
+Library13=json
+Library14=jsql
+Library15=jstringutils
+Library16=jxui
+Library17=okhttp
+Library18=xlutils
+Library2=cfdi40
+Library3=hikaricp
+Library4=javaobject
+Library5=jb4xencryption
+Library6=jcore
+Library7=jdateutils
+Library8=jfx
+Library9=jokhttputils2
+Module1=|relative|..\..\SharedModules\cfdi40\CFDI_Helper
+Module2=create_pdf
+Module3=|relative|..\..\SharedModules\dataTable
+Module4=|relative|..\..\SharedModules\orm\DB_ORM
+Module5=frmConstructorFactura
+Module6=frmSeleccion
+Module7=|relative|..\..\SharedModules\orm\query_builder
+Module8=|relative|..\..\SharedModules\utils
+Module9=utils_cfdi
+NumberOfFiles=5
+NumberOfLibraries=18
+NumberOfModules=9
+Version=9.5
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+	
+	#AdditionalJar: commons-text-1.9.jar
+	#AdditionalJar: commons-lang3-3.12.0.jar
+
+	#AdditionalJar: HikariCP-4.0.3.jar
+	
+'Muchas aplicaciones dependen de este libreria. 
+	#AdditionalJar: slf4j-api-1.7.30.jar
+	
+'Esta es para el cifrado de las conexioens
+	#AdditionalJar: bcprov-jdk15on-1.68.jar
+	
+'Driver
+	#AdditionalJar: mssql-jdbc-9.2.1.jre11.jar
+	
+	#AdditionalJar: cfdi4.jar
+	#AdditionalJar: not-yet-commons-ssl-0.3.9.jar
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Private MainForm As Form
+	Private xui As XUI
+	Private twFacturas As TableView
+	
+	Public siprovi As SQL
+	 
+	Type db_timbre (id As String, comprobante As db_comprobante, hora As Long, basico As String, timbre As String, timbrado As Boolean, error As String)
+	
+	Type db_emisor (id As String, comprobante As db_comprobante, nombre As String, rfc As String, lugar_expedicion As String, regimen As String)
+	
+	Type db_receptor (id As String, comprobante As db_comprobante, nombre As String, rfc As String, regimen As String, uso_cfdi As String _
+					 , codigo_postal As String) 
+	 
+	Type db_comprobante(id As String, fecha As Long, metodo_pago As String, forma_pago As String, moneda As String, tipo_de_comprobante As String _
+				       , exportacion As String, importe As Double, descuento As Double, p_descuento As Double, Subtotal As Double, folio As String _
+					   , iva As Double, pva As Double, ira As Double, pra As Double, Isr As Double, psr As Double, Total As Double, serie As String)
+				
+	Type db_concepto (id As String, comprobante As db_comprobante, consecutivo As Int, descripcion As String, unidad As String, pu As Double _
+				     , cant As Double, importe As Double, descuento As Double, Subtotal As Double, iva As Double, pva As Double, ira As Double _
+				     , pra As Double, isr As Double, psr As Double, neto As Double, cve As String, cun As String)
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)	
+	init_db
+	init_orm
+	
+	MainForm = Form1
+	MainForm.RootPane.LoadLayout("Layout1")
+	MainForm.Title = "El facturador"
+	MainForm.Show
+	
+	load_facturas
+End Sub
+
+private Sub init_orm
+	DB_ORM.Warm(CreateMap( "db_comprobante": "db_comprobantes" _
+						 , "db_timbre"     : "db_timbres" _
+						 , "db_emisor"     : "db_emisores" _
+						 , "db_receptor"   : "db_receptores" _
+						 , "db_concepto"   : "db_conceptos" _
+				))
+	DB_ORM.initSQL("prodig.io","4286","cfdi","sa","af590699-6EF7@")
+End Sub
+
+private Sub init_db
+	siprovi.Initialize2("com.microsoft.sqlserver.jdbc.SQLServerXADataSource",$"jdbc:sqlserver://emcif.fortiddns.com:52450;databaseName=siprovi_emcif"$,"sa","Savent01$")
+End Sub
+
+Private Sub btnNuevaFactura_Click
+	utils_cfdi.constructor(utils.uuid_null).show
+	load_facturas
+End Sub
+
+Private Sub btnEditarFactura_Click
+	If twFacturas.SelectedRow = -1 Then Return
+	utils_cfdi.constructor(twFacturas.SelectedRowValues(0)).show
+	load_facturas
+End Sub
+
+Private Sub load_facturas
+	Dim query As String = $"
+		with u_timbrado as (
+		SELECT comprobante_id
+			 , timbrado
+			 , error
+			 , ROW_NUMBER() OVER (Partition BY comprobante_id ORDER BY hora DESC) AS ultimo
+			FROM db_timbres
+		)
+
+		SELECT dbc.id
+			 , dbe.nombre as emisor
+			 , dbr.nombre as receptor
+			 , dbc.total as total
+			 , ISNULL(dbtu.timbrado,'') as timbrado
+			 , ISNULL(dbtu.error,'') as error
+			FROM db_comprobantes as dbc
+			INNER JOIN db_emisores as dbe on dbc.id = dbe.comprobante_id
+			INNER JOIN db_receptores as dbr on dbc.id = dbr.comprobante_id
+			LEFT JOIN (
+				SELECT comprobante_id
+					 , timbrado
+					 , error
+					FROM u_timbrado as ut
+				 WHERE ultimo = 1
+			) as dbtU on dbc.id = dbtU.comprobante_id
+	"$
+	
+	Dim sql As SQL = DB_ORM.pool.GetConnection
+	Dim dt As dataTable
+	dt.Initialize(sql, query, Null)
+	sql.Close
+	fill_tw(dt)
+End Sub
+
+private Sub fill_tw(dt As dataTable)
+	twFacturas.Items.Clear
+	For i = 0 To dt.RowsCount -1
+		Dim params(6) As Object
+		params(0) = dt.getCellValue(i, "id")
+		params(1) = dt.getCellValue(i, "emisor")
+		params(2) = dt.getCellValue(i, "receptor")
+		params(3) = dt.getCellValue(i, "total")
+		params(4) = to_chkBox(dt.getCellValue(i, "timbrado"))
+		params(5) = dt.getCellValue(i, "error")
+		twFacturas.Items.Add(params)
+	Next
+End Sub
+
+Private Sub to_chkBox(value As Int) As CheckBox
+	Dim chk As CheckBox
+	chk.Initialize("")
+	chk.Enabled = False
+	
+	chk.Checked = value = 1
+	Return chk
+End Sub
+

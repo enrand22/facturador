@@ -1,0 +1,19 @@
+#Git will ignore the following files/folders:
+bin/
+gen/
+src/
+Objects/
+Objects/*
+!Server/Objects/templates/
+!Server/*
+Server/Objects/*
+!Server/Objects/freemarker_templates/
+!Server/Objects/freemarker_templates/*
+Objects/www/*
+!Objects/www/scripts/
+!Objects/www/styles/
+AutoBackups/
+*.jar
+*.dex
+*.mp4
+*.meta
