@@ -64,6 +64,8 @@ Version=9.5
 	
 	#AdditionalJar: cfdi4.jar
 	#AdditionalJar: not-yet-commons-ssl-0.3.9.jar
+	
+	#PackagerProperty: IncludedModules = java.sql
 #End Region
 
 Sub Process_Globals
