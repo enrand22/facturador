@@ -65,7 +65,7 @@ Version=9.5
 	#AdditionalJar: cfdi4.jar
 	#AdditionalJar: not-yet-commons-ssl-0.3.9.jar
 	
-	#PackagerProperty: IncludedModules = java.sql
+	#PackagerProperty: IncludedModules = jdk.charsets,java.base,java.desktop,java.logging,java.management,java.naming,java.scripting,java.security.jgss,java.sql,java.transaction.xa,java.xml,java.xml.crypto,javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,jdk.unsupported,java.datatransfer,jdk.unsupported.desktop,jdk.jsobject,jdk.xml.dom
 #End Region
 
 Sub Process_Globals
@@ -115,7 +115,7 @@ private Sub init_orm
 End Sub
 
 private Sub init_db
-	siprovi.Initialize2("com.microsoft.sqlserver.jdbc.SQLServerXADataSource",$"jdbc:sqlserver://emcif.fortiddns.com:52450;databaseName=siprovi_emcif"$,"sa","Savent01$")
+	siprovi.Initialize2("com.microsoft.sqlserver.jdbc.SQLServerDriver",$"jdbc:sqlserver://emcif.fortiddns.com:52450;databaseName=siprovi_emcif"$,"sa","Savent01$")
 End Sub
 
 Private Sub btnNuevaFactura_Click
