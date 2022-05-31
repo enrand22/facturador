@@ -111,11 +111,12 @@ private Sub init_orm
 						 , "db_receptor"   : "db_receptores" _
 						 , "db_concepto"   : "db_conceptos" _
 				))
-	DB_ORM.initSQL("prodig.io","4286","cfdi","sa","af590699-6EF7@")
 End Sub
 
 private Sub init_db
 	siprovi.Initialize2("com.microsoft.sqlserver.jdbc.SQLServerDriver",$"jdbc:sqlserver://emcif.fortiddns.com:52450;databaseName=siprovi_emcif"$,"sa","Savent01$")
+	utils.initSQL($"prodig.io"$,4286,"CFDI","sa","af590699-6EF7@")
+	utils.limit_connections(2)
 End Sub
 
 Private Sub btnNuevaFactura_Click
@@ -157,7 +158,7 @@ Private Sub load_facturas
 			) as dbtU on dbc.id = dbtU.comprobante_id
 	"$
 	
-	Dim sql As SQL = DB_ORM.pool.GetConnection
+	Dim sql As SQL = utils.getConnection("")
 	Dim dt As dataTable
 	dt.Initialize(sql, query, Null)
 	sql.Close

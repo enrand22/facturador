@@ -1036,7 +1036,7 @@ private Sub guardar
 	Dim conceptos As List = prepare_db_conceptos
 	
 	
-	Dim sql As SQL = DB_ORM.pool.GetConnection
+	Dim sql As SQL = utils.getConnection("")
 	Try
 		DB_ORM.save(dbc, sql)
 		
