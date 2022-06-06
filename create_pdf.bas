@@ -25,9 +25,9 @@ Sub Class_Globals
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
-Public Sub Initialize(cfdi As Comprobante, uuid As String, dbt As db_timbre)
+Public Sub Initialize(cfdi As Comprobante, dbt As db_timbre)
 	gCfdi = cfdi
-	gUUID = uuid
+	gUUID = IIf(dbt.uuid <> "",dbt.uuid,dbt.id)
 	If dbt.timbre <> ""  Then xml.Initialize(dbt.timbre)
 	create_workbook
 	create_styles

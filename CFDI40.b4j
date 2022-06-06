@@ -78,7 +78,7 @@ Sub Process_Globals
 	
 	Public siprovi As SQL
 	 
-	Type db_timbre (id As String, comprobante As db_comprobante, hora As Long, basico As String, timbre As String, timbrado As Boolean, error As String, png As String)
+	Type db_timbre (id As String, comprobante As db_comprobante, hora As Long, basico As String, timbre As String, timbrado As Boolean, error As String, uuid As String, png As String)
 	
 	Type db_emisor (id As String, comprobante As db_comprobante, nombre As String, rfc As String, lugar_expedicion As String, regimen As String)
 	
