@@ -25,7 +25,7 @@ Sub Class_Globals
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
-Public Sub Initialize(cfdi As Comprobante, dbt As db_timbre)
+Public Sub Initialize(cfdi As Comprobante, dbt As db_timbre, observaciones As String)
 	gCfdi = cfdi
 	gUUID = IIf(dbt.uuid <> "",dbt.uuid,dbt.id)
 	If dbt.timbre <> ""  Then xml.Initialize(dbt.timbre)
@@ -37,6 +37,11 @@ Public Sub Initialize(cfdi As Comprobante, dbt As db_timbre)
 	write_receptor
 	
 	Dim row As Int = write_conceptos
+	
+	If observaciones <> "" Then 
+	row = write_observaciones(row, observaciones)
+	End If
+	
 	write_financieros(row)
 	row = write_totales(row)
 	write_timbre(row, dbt.png)
@@ -152,6 +157,14 @@ private Sub write_timbre(row As Int, png As String)
 		
 	ws.PoiSheet.SetImage(add_png(png), 1, row + 1, 8, row + 9)	
 		
+End Sub
+
+private Sub write_observaciones(row As Int, observaciones As String) As Int
+	Dim increase As Int = observaciones.Length - observaciones.Replace(CRLF, "").Length
+	increase = increase + (observaciones.Length / 54)
+	
+	ws.PutString(merge(row + 1, 0 ,row + increase,13),observaciones).AddStyles(ws.LastAccessed,Array(sSmall,sTopJustify))
+	Return row + 1 + increase
 End Sub
 
 Private Sub add_png(png As String) As Int

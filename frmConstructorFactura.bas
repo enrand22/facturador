@@ -71,6 +71,8 @@ Sub Class_Globals
 	Private txtIra As TextField
 	Private txtIsr As TextField
 	Private txtTotal As TextField
+	
+	Private txtObservaciones As TextArea
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -126,6 +128,13 @@ private Sub load_data
 	
 	get_serie_de_emisor
 	set_value_to_cmb(cmbSerie, dbc.serie)
+	
+	load_otros(dbc)
+End Sub
+
+Private Sub load_otros(dbc As db_comprobante)
+	txtObservaciones.Text = dbc.observaciones
+	
 End Sub
 
 private Sub load_comprobante As db_comprobante
@@ -240,6 +249,7 @@ public Sub load_layout
 	frm.RootPane.LoadLayout("layoutFacturaTab")
 	TabPane1.LoadLayout("layoutDatosBasicos","Datos Basicos")
 	TabPane1.LoadLayout("layoutCalculos","Calculos")
+	TabPane1.LoadLayout("layoutObservaciones","Observaciones")
 	
 	TabPane1.SelectedIndex = 0
 	frm.Title = "Constructor de Facturas"
@@ -702,7 +712,7 @@ End Sub
 Private Sub btnImprimir_Click
 	Dim timbre As db_timbre = obtener_xml_timbrado
 	Dim cp As create_pdf
-	cp.Initialize(build_cfdi, timbre)
+	cp.Initialize(build_cfdi, timbre, txtObservaciones.text)
 End Sub
 
 Private Sub btnTimbrar_Click
@@ -1102,6 +1112,8 @@ private Sub prepare_db_comprobante As db_comprobante
 	dbc.psr 		= text_to_value(txtPIsr.Text)
 	dbc.Subtotal 	= text_to_value(txtSubtotal.Text)
 	dbc.Total 		= text_to_value(txtTotal.Text)
+	
+	dbc.observaciones = txtObservaciones.text
 	
 	Return dbc
 End Sub

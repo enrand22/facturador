@@ -5,12 +5,14 @@ File1=Layout1.bjl
 File2=layoutCalculos.bjl
 File3=layoutDatosBasicos.bjl
 File4=layoutFacturaTab.bjl
-File5=layoutSeleccion.bjl
+File5=layoutObservaciones.bjl
+File6=layoutSeleccion.bjl
 FileGroup1=Default Group
 FileGroup2=Default Group
 FileGroup3=Default Group
 FileGroup4=Default Group
 FileGroup5=Default Group
+FileGroup6=Default Group
 Group=Default Group
 Library1=byteconverter
 Library10=jpoi
@@ -41,7 +43,7 @@ Module6=frmSeleccion
 Module7=ParseXML
 Module8=|relative|..\..\SharedModules\orm\query_builder
 Module9=|relative|..\..\SharedModules\utils
-NumberOfFiles=5
+NumberOfFiles=6
 NumberOfLibraries=19
 NumberOfModules=10
 Version=9.5
@@ -87,7 +89,8 @@ Sub Process_Globals
 	 
 	Type db_comprobante(id As String, fecha As Long, metodo_pago As String, forma_pago As String, moneda As String, tipo_de_comprobante As String _
 				       , exportacion As String, importe As Double, descuento As Double, p_descuento As Double, Subtotal As Double, folio As String _
-					   , iva As Double, pva As Double, ira As Double, pra As Double, Isr As Double, psr As Double, Total As Double, serie As String)
+					   , iva As Double, pva As Double, ira As Double, pra As Double, Isr As Double, psr As Double, Total As Double, serie As String _
+					   , observaciones As String)
 				
 	Type db_concepto (id As String, comprobante As db_comprobante, consecutivo As Int, descripcion As String, unidad As String, pu As Double _
 				     , cant As Double, importe As Double, descuento As Double, Subtotal As Double, iva As Double, pva As Double, ira As Double _
