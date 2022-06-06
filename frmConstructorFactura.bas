@@ -700,8 +700,9 @@ End Sub
 #end region
 
 Private Sub btnImprimir_Click
+	Dim timbre As db_timbre = obtener_xml_timbrado
 	Dim cp As create_pdf
-	cp.Initialize(build_cfdi, DB_ORM.UUID_NULL)
+	cp.Initialize(build_cfdi, DB_ORM.UUID_NULL, timbre)
 End Sub
 
 Private Sub btnTimbrar_Click
@@ -719,7 +720,7 @@ Private Sub timbrar
 	wait for (xrs) complete (response As Map)
 	Dim cfdi As String = response.Get("cfdi")
 	If cfdi <> "" Then
-		guardar_timbre(xml, response.Get("cfdi"))
+		guardar_timbre(xml, response.Get("cfdi"), response.Get("png"))
 		fx.Msgbox(frm,"Timbrado correcto","")
 	Else
 		Dim error As String = response.Get("codigo_mf_texto")
@@ -728,13 +729,29 @@ Private Sub timbrar
 	End If
 End Sub
 
-Private Sub guardar_timbre(xml As String, xml_timbrado As String)
+private Sub obtener_xml_timbrado As db_timbre
+	Dim qb As query_builder
+	qb.Initialize("db_timbre")
+	qb.all_fields
+	qb.where(CreateMap("comprobante_id":db_comprobante_id,"timbrado":1),"AND",False)
+	
+	Dim dbt As List = qb.get_all(Null)
+	If dbt.Size = 0 Then Return empty_timbre
+	Return dbt.Get(0)
+End Sub
+
+private Sub empty_timbre As db_timbre
+	Return DB_ORM.create_empty_model("db_timbre")
+End Sub
+
+Private Sub guardar_timbre(xml As String, xml_timbrado As String, png As String)
 	Dim dbt As db_timbre = DB_ORM.create_empty_model("db_timbre")
 	dbt.basico = xml
 	dbt.timbre = xml_timbrado
 	dbt.comprobante.id = db_comprobante_id
 	dbt.hora = DateTime.Now
 	dbt.timbrado = True
+	dbt.png = png
 	
 #if debug
 	File.Writestring(File.DirApp,"factura.xml", xml_timbrado)

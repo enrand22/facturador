@@ -22,6 +22,7 @@ Library15=jstringutils
 Library16=jxui
 Library17=okhttp
 Library18=xlutils
+Library19=simplexml2
 Library2=cfdi40
 Library3=hikaricp
 Library4=javaobject
@@ -31,17 +32,18 @@ Library7=jdateutils
 Library8=jfx
 Library9=jokhttputils2
 Module1=|relative|..\..\SharedModules\cfdi40\CFDI_Helper
+Module10=utils_cfdi
 Module2=create_pdf
 Module3=|relative|..\..\SharedModules\dataTable
 Module4=|relative|..\..\SharedModules\orm\DB_ORM
 Module5=frmConstructorFactura
 Module6=frmSeleccion
-Module7=|relative|..\..\SharedModules\orm\query_builder
-Module8=|relative|..\..\SharedModules\utils
-Module9=utils_cfdi
+Module7=ParseXML
+Module8=|relative|..\..\SharedModules\orm\query_builder
+Module9=|relative|..\..\SharedModules\utils
 NumberOfFiles=5
-NumberOfLibraries=18
-NumberOfModules=9
+NumberOfLibraries=19
+NumberOfModules=10
 Version=9.5
 @EndOfDesignText@
 #Region Project Attributes 
@@ -76,7 +78,7 @@ Sub Process_Globals
 	
 	Public siprovi As SQL
 	 
-	Type db_timbre (id As String, comprobante As db_comprobante, hora As Long, basico As String, timbre As String, timbrado As Boolean, error As String)
+	Type db_timbre (id As String, comprobante As db_comprobante, hora As Long, basico As String, timbre As String, timbrado As Boolean, error As String, png As String)
 	
 	Type db_emisor (id As String, comprobante As db_comprobante, nombre As String, rfc As String, lugar_expedicion As String, regimen As String)
 	
