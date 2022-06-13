@@ -73,6 +73,8 @@ Sub Class_Globals
 	Private txtTotal As TextField
 	
 	Private txtObservaciones As TextArea
+	
+	Private btnTimbrar As Button
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
@@ -104,13 +106,51 @@ private Sub db_get_data_from_comrpobante(model As String) As List
 End Sub
 
 public Sub show
-	frm.Initialize("",1024,720)
+	frm.Initialize("",1024,733)
 	load_layout
 	If db_comprobante_id <> utils.uuid_null Then load_data
 	#if nomina
 	If db_comprobante_id = utils.uuid_null  Then load_data_nomina
 	#End If
+	clean_all_txt
+	disable_button_timbrado
 	frm.ShowAndWait
+End Sub
+
+private Sub clean_all_txt
+	clean_txt(txtTotal,C_2_DIGITS)
+	clean_txt(txtIsr,C_2_DIGITS)
+	clean_txt(txtIra,C_2_DIGITS)
+	clean_txt(txtIva,C_2_DIGITS)
+	clean_txt(txtSubtotal,C_6_DIGITS)
+	clean_txt(txtDescuento,C_2_DIGITS)
+	clean_txt(txtImporte,C_2_DIGITS)
+	clean_txt(txtPDescuento,C_6_DIGITS)
+	clean_txt(txtPiva,C_2_DIGITS)
+	clean_txt(txtPira,C_2_DIGITS)
+	clean_txt(txtPIsr,C_2_DIGITS)
+	
+	clean_all_rows
+End Sub
+
+private Sub clean_all_rows 
+	For Each dr() As Object In tbConceptos.Items
+		clean_row(dr)
+	Next
+End Sub
+
+private Sub clean_row(dr() As Object)
+	clean_txt(dr(C_IMPORTE),C_6_DIGITS)
+	clean_txt(dr(C_SUBTOTAL),C_6_DIGITS)
+	clean_txt(dr(C_IVA),C_6_DIGITS)
+	clean_txt(dr(C_IRA),C_6_DIGITS)
+	clean_txt(dr(C_ISR),C_6_DIGITS)
+	clean_txt(dr(C_CANT),C_6_DIGITS)
+	clean_txt(dr(C_DESCUENTO),C_6_DIGITS)
+	clean_txt(dr(C_PVA),C_6_DIGITS)
+	clean_txt(dr(C_PRA),C_6_DIGITS)
+	clean_txt(dr(C_PSR),C_6_DIGITS)
+	clean_txt(dr(C_NETO),C_6_DIGITS)
 End Sub
 
 #region cargar_datos
@@ -130,6 +170,14 @@ private Sub load_data
 	set_value_to_cmb(cmbSerie, dbc.serie)
 	
 	load_otros(dbc)
+End Sub
+
+private Sub disable_button_timbrado
+	Dim dbt As db_timbre =  obtener_xml_timbrado
+	
+	If dbt.uuid = DB_ORM.UUID_NULL Then
+		btnTimbrar.enabled = False
+	End If
 End Sub
 
 Private Sub load_otros(dbc As db_comprobante)
@@ -275,7 +323,7 @@ private Sub tvConceptos_columns_widths
 	tbConceptos.SetColumnWidth(C_ID,0)
 	tbConceptos.SetColumnWidth(C_CONSECUTIVO,50)
 	tbConceptos.SetColumnWidth(C_DESCRIPCION,500)
-	tbConceptos.SetColumnWidth(C_UNIDAD,50)
+	tbConceptos.SetColumnWidth(C_UNIDAD,70)
 	tbConceptos.SetColumnWidth(C_PU, DEC_WIDTH)
 	tbConceptos.SetColumnWidth(C_CANT, DEC_WIDTH)
 	tbConceptos.SetColumnWidth(C_IMPORTE, DEC_WIDTH)
@@ -501,6 +549,7 @@ End Sub
 #Region calcular
 Private Sub btnRecalcular_Click
 	calcular_completo
+	clean_all_txt
 End Sub
 
 Private Sub calcular_totales
@@ -525,14 +574,6 @@ Private Sub calcular_totales
 	txtSubtotal.Text 	= subtotal
 	txtDescuento.Text 	= descuento
 	txtImporte.Text 	= importe
-	
-	clean_txt(txtTotal,C_2_DIGITS)
-	clean_txt(txtIsr,C_2_DIGITS)
-	clean_txt(txtIra,C_2_DIGITS)
-	clean_txt(txtIva,C_2_DIGITS)
-	clean_txt(txtSubtotal,C_6_DIGITS)
-	clean_txt(txtDescuento,C_2_DIGITS)
-	clean_txt(txtImporte,C_2_DIGITS)
 End Sub
 
 private Sub calcular_filas
@@ -549,11 +590,7 @@ private Sub calcular_fila(dr() As Object)
 	dr(C_IRA).As(TextField).Text = to_value(dr(C_SUBTOTAL)) * (to_value(dr(C_PRA)) / 100)
 	dr(C_ISR).As(TextField).Text = to_value(dr(C_SUBTOTAL)) * (to_value(dr(C_PSR)) / 100)
 	
-	clean_txt(dr(C_IMPORTE),C_6_DIGITS)
-	clean_txt(dr(C_SUBTOTAL),C_6_DIGITS)
-	clean_txt(dr(C_IVA),C_6_DIGITS)
-	clean_txt(dr(C_IRA),C_6_DIGITS)
-	clean_txt(dr(C_ISR),C_6_DIGITS)
+	clean_row(dr)
 End Sub
 
 private Sub calcular_completo
@@ -597,7 +634,8 @@ End Sub
 
 Private Sub descontar
 	For Each dr() As Object In tbConceptos.Items
-		dr(C_DESCUENTO) = dr(C_IMPORTE).As(Double) * txtPDescuento.Text.As(Double) / 100
+		Dim txtDescontar As TextField = dr(C_DESCUENTO)
+		txtDescontar.text = dr(C_IMPORTE).As(TextField).text.As(Double) * txtPDescuento.Text.As(Double) / 100
 	Next
 End Sub
 
@@ -710,9 +748,7 @@ End Sub
 #end region
 
 Private Sub btnImprimir_Click
-	Dim timbre As db_timbre = obtener_xml_timbrado
-	Dim cp As create_pdf
-	cp.Initialize(build_cfdi, timbre, txtObservaciones.text)
+	imprimir
 End Sub
 
 Private Sub btnTimbrar_Click
@@ -723,7 +759,7 @@ End Sub
 Private Sub timbrar
 	Dim xml As String = build_cfdi.toPrettyXML
 #if debug
-	File.Writestring(File.DirApp,"factura.xml", xml)
+	File.Writestring(File.dirapp,"factura.xml", xml)
 #End If
 	Dim xrs As ResumableSub = CFDI_Helper.timbrar_mf(xml,lbl_emisor_rfc.text)
 	
@@ -732,11 +768,21 @@ Private Sub timbrar
 	If cfdi <> "" Then
 		guardar_timbre(xml, response)
 		fx.Msgbox(frm,"Timbrado correcto","")
+		imprimir
 	Else
 		Dim error As String = response.Get("codigo_mf_texto")
 		guardar_error(xml, error)
 		fx.Msgbox(frm,error,"Error de timbrado")
 	End If
+End Sub
+
+private Sub imprimir
+	Dim timbre As db_timbre = obtener_xml_timbrado
+	Dim cp As create_pdf
+	Dim name As String = cp.Initialize(build_cfdi, timbre, txtObservaciones.text)
+	name = name.SubString2(0,name.LastIndexOf(".")) & ".xml"
+	File.WriteString(utils.FindUserDocumentsFolder,File.GetName(name),timbre.timbre)
+'	fx.ShowExternalDocument(File.GetFileParent(name))
 End Sub
 
 private Sub obtener_xml_timbrado As db_timbre
@@ -784,14 +830,14 @@ End Sub
 
 Private Sub btnRevisar_Click
 	guardar
-	revisar
+'	revisar
 End Sub
 
-private Sub revisar
-	Dim xml As String = build_cfdi.toPrettyXML
-	File.Writestring(File.DirApp,"factura.xml", xml)
-	fx.ShowExternalDocument(File.GetUri(File.DirApp,"factura.xml"))
-End Sub
+'private Sub revisar
+'	Dim xml As String = build_cfdi.toPrettyXML
+'	File.Writestring(File.DirApp,"factura.xml", xml)
+'	fx.ShowExternalDocument(File.GetUri(File.DirApp,"factura.xml"))
+'End Sub
 
 Private Sub btnGuardar_Click
 	guardar

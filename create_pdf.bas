@@ -25,7 +25,7 @@ Sub Class_Globals
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
-Public Sub Initialize(cfdi As Comprobante, dbt As db_timbre, observaciones As String)
+Public Sub Initialize(cfdi As Comprobante, dbt As db_timbre, observaciones As String) As String
 	gCfdi = cfdi
 	gUUID = IIf(dbt.uuid <> "",dbt.uuid,dbt.id)
 	If dbt.timbre <> ""  Then xml.Initialize(dbt.timbre)
@@ -46,7 +46,7 @@ Public Sub Initialize(cfdi As Comprobante, dbt As db_timbre, observaciones As St
 	row = write_totales(row)
 	write_timbre(row, dbt.png)
 	
-	save
+	Return save
 End Sub
 
 public Sub create_styles
@@ -292,13 +292,16 @@ Private Sub write_fecha
 	ws.PutDate(merge(3,20,3,23),gCfdi.Fecha.Fecha).AddStyles(ws.LastAccessed,Array(sCenter,sDate))
 End Sub
 
-Private Sub save
-	Dim realName As String = wb.SaveAs(File.DirTemp,gUUID & ".xlsx",True)
+Private Sub save As String
+	Dim realName As String = wb.SaveAs(utils.FindUserDocumentsFolder,gUUID & ".xlsx",True)
 #if debug
 	fx.ShowExternalDocument(File.GetUri(File.GetFileParent(realName),File.GetName(realName)))
 #else
-	xl.PowerShellConvertToPdf(realName,realName.Replace(".xlsx",".pdf"),0,True)
+	Dim pdfName As String = realName.Replace(".xlsx",".pdf")
+	xl.PowerShellConvertToPdf(realName,pdfName,0,True)
+	realName = pdfName
 #End If
+	Return realName
 End Sub
 
 Private Sub merge(x0 As Int, y0 As Int, x1 As Int, y1 As Int) As XLAddress
