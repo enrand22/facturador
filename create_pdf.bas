@@ -114,7 +114,7 @@ Private Sub write_conceptos	As Int
 		Dim tecnicos As String = $"Clave: ${concepto.ClaveProdServ}, Unidad: ${concepto.Unidad} ${concepto.ClaveUnidad}"$
 		
 		ws.PutString(merge(row,0 ,row + increase,13),concepto.Descripcion).AddStyles(ws.LastAccessed,Array(sSmall,sTopJustify))
-		ws.PutString(merge(row + 1 ,0,row + 1 + increase,13),tecnicos).AddStyles(ws.LastAccessed,Array(sRSmall,sTopJustify))
+		ws.PutString(merge(row + increase + 1 ,0,row + 1 + increase,13),tecnicos).AddStyles(ws.LastAccessed,Array(sRSmall,sTopJustify))
 		
 		ws.PutNumber(merge(row,14,row + 1 + increase,15),concepto.Cantidad.Value).AddStyles(ws.LastAccessed,Array(sSmall,sCant))
 		ws.PutNumber(merge(row,16,row + 1 + increase,19),concepto.ValorUnitario.Value).AddStyles(ws.LastAccessed,Array(sSmall,sValue))

@@ -824,6 +824,7 @@ Private Sub guardar_error(xml As String, error As String)
 	dbt.hora = DateTime.Now
 	dbt.timbrado = False
 	dbt.error = error
+	dbt.uuid = DB_ORM.UUID_NULL
 	
 	DB_ORM.save(dbt, Null)
 End Sub
@@ -940,7 +941,7 @@ Private Sub build_traslados_iva(comprobante As Comprobante)
 		traslado.Initialize
 		Dim valores() As Double = m.Get(tasa)
 		
-		traslado.Base = utils_cfdi.bg_half_even(valores(0),2)
+		traslado.Base = utils_cfdi.bg_floor(valores(0),2)
 		traslado.importe = utils_cfdi.bg_floor(valores(1),2)
 		traslado.TasaOCuota = tasa
 		traslado.TipoFactor = "TASA"
@@ -1066,7 +1067,7 @@ Private Sub build_concepto_iva(dr() As Object) As ConceptoTraslado
 	Dim traslado As ConceptoTraslado
 	traslado.Initialize
 	
-	traslado.Base 			= utils_cfdi.bg_half_even(dr(C_SUBTOTAL), 2)
+	traslado.Base 			= utils_cfdi.bg_half_even(dr(C_SUBTOTAL), 6)
 	traslado.Impuesto 		= "002"
 	traslado.TasaOCuota 	= utils_cfdi.bg_half_even(dr(C_PVA) / 100, 6)
 	traslado.TipoFactor 	= "TASA"
