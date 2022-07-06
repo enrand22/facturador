@@ -781,7 +781,8 @@ private Sub imprimir
 	Dim cp As create_pdf
 	Dim name As String = cp.Initialize(build_cfdi, timbre, txtObservaciones.text)
 	name = name.SubString2(0,name.LastIndexOf(".")) & ".xml"
-	File.WriteString(utils.FindUserDocumentsFolder,File.GetName(name),timbre.timbre)
+	If timbre.timbre <> "" Then File.WriteString(utils.FindUserDocumentsFolder,File.GetName(name),timbre.timbre)
+	If timbre.basico <> "" And timbre.timbre = "" Then File.WriteString(utils.FindUserDocumentsFolder,File.GetName(name),timbre.basico)
 '	fx.ShowExternalDocument(File.GetFileParent(name))
 End Sub
 
